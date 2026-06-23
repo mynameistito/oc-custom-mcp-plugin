@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { removeDisabledMcps } from "../index";
+import plugin, { removeDisabledMcps } from "../index";
 import type { RuntimeConfig } from "../index";
 
 describe("removeDisabledMcps", () => {
@@ -101,5 +101,27 @@ describe("removeDisabledMcps", () => {
 
     expect(result).toBe(config);
     expect(config.mcp).toEqual({});
+  });
+});
+
+describe("plugin", () => {
+  test("exposes a config hook that removes disabled MCPs", async () => {
+    const hooks = await plugin();
+    const configHook = hooks.config;
+
+    expect(typeof configHook).toBe("function");
+
+    const config: RuntimeConfig = {
+      mcp: {
+        disabled: { enabled: false },
+        visible: { type: "local" },
+      },
+    };
+
+    await configHook?.(config);
+
+    expect(config.mcp).toEqual({
+      visible: { type: "local" },
+    });
   });
 });
